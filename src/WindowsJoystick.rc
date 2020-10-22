@@ -1,0 +1,125 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "winres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (United States) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include ""winres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_JOYOUT DIALOGEX 0, 0, 533, 338
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Joystick Demo"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,476,317,50,14
+    GROUPBOX        "HAT Switch",IDC_STATIC,193,7,49,45
+    GROUPBOX        "Mode Select",IDC_STATIC,249,7,76,44
+    CONTROL         "Message Loop",IDC_MESSAGE_LOOP,"Button",BS_AUTORADIOBUTTON,255,17,61,10
+    CONTROL         "Input Loop",IDC_INPUT_LOOP,"Button",BS_AUTORADIOBUTTON,255,29,51,10
+    CONTROL         "",IDC_HAT_UP,"Button",BS_AUTOCHECKBOX | WS_DISABLED,215,17,16,10
+    CONTROL         "",IDC_HAT_LEFT,"Button",BS_AUTOCHECKBOX | WS_DISABLED,203,27,16,10
+    CONTROL         "",IDC_HAT_RIGHT,"Button",BS_AUTOCHECKBOX | WS_DISABLED,225,27,16,10
+    CONTROL         "",IDC_HAT_DOWN,"Button",BS_AUTOCHECKBOX | WS_DISABLED,215,37,16,10
+    LISTBOX         IDC_JOYSTICK_LIST,7,7,179,67,LBS_SORT | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "",IDC_BUTTON_LIST,"SysListView32",LVS_REPORT | LVS_ALIGNLEFT | WS_BORDER | WS_TABSTOP,7,80,179,231
+    CONTROL         "",IDC_AXIS_LIST,"SysListView32",LVS_REPORT | LVS_ALIGNLEFT | WS_BORDER | WS_TABSTOP,192,80,334,115
+    CONTROL         "",IDC_HAT_LIST,"SysListView32",LVS_REPORT | LVS_ALIGNLEFT | WS_BORDER | WS_TABSTOP,192,201,167,110
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO
+BEGIN
+    IDD_JOYOUT, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 526
+        VERTGUIDE, 186
+        VERTGUIDE, 192
+        VERTGUIDE, 359
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 331
+        HORZGUIDE, 74
+        HORZGUIDE, 80
+        HORZGUIDE, 195
+        HORZGUIDE, 201
+        HORZGUIDE, 311
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// AFX_DIALOG_LAYOUT
+//
+
+IDD_JOYOUT AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+#endif    // English (United States) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+
