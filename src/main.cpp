@@ -45,7 +45,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 	ZeroMemory(&column, sizeof(LVCOLUMNW));
 	column.mask = LVCF_TEXT | LVCF_WIDTH;
 	column.pszText = (LPWSTR)L"Button";
-	column.cx = 100;
+	column.cx = 130;
 	SendMessageW(btnList, LVM_INSERTCOLUMN, 0, (LPARAM)&column);
 	column.pszText = (LPWSTR)L"Pressed";
 	column.cx = 60;
@@ -274,31 +274,31 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 
 				switch (TChapman500::JoystickAPI::InputSystem::System->JoystickList[CurrSel]->HATList[i]->Direction)
 				{
-				case TChapman500::JoystickAPI::InputHAT::direction::None:
+				case TChapman500::JoystickAPI::direction::None:
 					swprintf_s(hatString, 32, L"Centered");
 					break;
-				case TChapman500::JoystickAPI::InputHAT::direction::Top:
+				case TChapman500::JoystickAPI::direction::Up:
 					swprintf_s(hatString, 32, L"Up");
 					break;
-				case TChapman500::JoystickAPI::InputHAT::direction::TopRight:
+				case TChapman500::JoystickAPI::direction::UpRight:
 					swprintf_s(hatString, 32, L"Up & Right");
 					break;
-				case TChapman500::JoystickAPI::InputHAT::direction::Right:
+				case TChapman500::JoystickAPI::direction::Right:
 					swprintf_s(hatString, 32, L"Right");
 					break;
-				case TChapman500::JoystickAPI::InputHAT::direction::BottomRight:
+				case TChapman500::JoystickAPI::direction::DownRight:
 					swprintf_s(hatString, 32, L"Down & Right");
 					break;
-				case TChapman500::JoystickAPI::InputHAT::direction::Bottom:
+				case TChapman500::JoystickAPI::direction::Down:
 					swprintf_s(hatString, 32, L"Down");
 					break;
-				case TChapman500::JoystickAPI::InputHAT::direction::BottomLeft:
+				case TChapman500::JoystickAPI::direction::DownLeft:
 					swprintf_s(hatString, 32, L"Down & Left");
 					break;
-				case TChapman500::JoystickAPI::InputHAT::direction::Left:
+				case TChapman500::JoystickAPI::direction::Left:
 					swprintf_s(hatString, 32, L"Left");
 					break;
-				case TChapman500::JoystickAPI::InputHAT::direction::TopLeft:
+				case TChapman500::JoystickAPI::direction::UpLeft:
 					swprintf_s(hatString, 32, L"Up & Left");
 					break;
 				}
@@ -312,12 +312,12 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 
 
 			// Get HAT State
-			if (TChapman500::JoystickAPI::InputSystem::System->JoystickList[CurrSel]->HATList[0])
+			/*if (TChapman500::JoystickAPI::InputSystem::System->JoystickList[CurrSel]->HATList[0])
 			{
 				TChapman500::JoystickAPI::InputHAT::direction direction = TChapman500::JoystickAPI::InputSystem::System->JoystickList[CurrSel]->HATList[0]->Direction;
 
 				LRESULT state = SendMessageW(hatUp, BM_GETCHECK, 0, 0);
-				if (direction == TChapman500::JoystickAPI::InputHAT::direction::Top || direction == TChapman500::JoystickAPI::InputHAT::direction::TopLeft || direction == TChapman500::JoystickAPI::InputHAT::direction::TopRight)
+				if (direction == TChapman500::JoystickAPI::InputHAT::direction::Up || direction == TChapman500::JoystickAPI::InputHAT::direction::UpLeft || direction == TChapman500::JoystickAPI::InputHAT::direction::UpRight)
 				{
 					if (state == BST_UNCHECKED) SendMessageW(hatUp, BM_SETCHECK, BST_CHECKED, 0);
 				}
@@ -327,7 +327,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 				}
 
 				state = SendMessageW(hatLeft, BM_GETCHECK, 0, 0);
-				if (direction == TChapman500::JoystickAPI::InputHAT::direction::Left || direction == TChapman500::JoystickAPI::InputHAT::direction::TopLeft || direction == TChapman500::JoystickAPI::InputHAT::direction::BottomLeft)
+				if (direction == TChapman500::JoystickAPI::InputHAT::direction::Left || direction == TChapman500::JoystickAPI::InputHAT::direction::UpLeft || direction == TChapman500::JoystickAPI::InputHAT::direction::DownLeft)
 				{
 					if (state == BST_UNCHECKED) SendMessageW(hatLeft, BM_SETCHECK, BST_CHECKED, 0);
 				}
@@ -337,7 +337,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 				}
 
 				state = SendMessageW(hatRight, BM_GETCHECK, 0, 0);
-				if (direction == TChapman500::JoystickAPI::InputHAT::direction::Right || direction == TChapman500::JoystickAPI::InputHAT::direction::TopRight || direction == TChapman500::JoystickAPI::InputHAT::direction::BottomRight)
+				if (direction == TChapman500::JoystickAPI::InputHAT::direction::Right || direction == TChapman500::JoystickAPI::InputHAT::direction::UpRight || direction == TChapman500::JoystickAPI::InputHAT::direction::DownRight)
 				{
 					if (state == BST_UNCHECKED) SendMessageW(hatRight, BM_SETCHECK, BST_CHECKED, 0);
 				}
@@ -347,7 +347,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 				}
 
 				state = SendMessageW(hatDown, BM_GETCHECK, 0, 0);
-				if (direction == TChapman500::JoystickAPI::InputHAT::direction::Bottom || direction == TChapman500::JoystickAPI::InputHAT::direction::BottomLeft || direction == TChapman500::JoystickAPI::InputHAT::direction::BottomRight)
+				if (direction == TChapman500::JoystickAPI::InputHAT::direction::Down || direction == TChapman500::JoystickAPI::InputHAT::direction::DownLeft || direction == TChapman500::JoystickAPI::InputHAT::direction::DownRight)
 				{
 					if (state == BST_UNCHECKED) SendMessageW(hatDown, BM_SETCHECK, BST_CHECKED, 0);
 				}
@@ -355,7 +355,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 				{
 					if (state == BST_CHECKED) SendMessageW(hatDown, BM_SETCHECK, BST_UNCHECKED, 0);
 				}
-			}
+			}*/
 		}
 		else
 		{

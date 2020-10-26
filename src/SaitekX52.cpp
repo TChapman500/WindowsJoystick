@@ -22,6 +22,14 @@ SaitekX52::SaitekX52(HANDLE device) : TChapman500::JoystickAPI::Joystick(device)
 	ButtonList[12]->SetName(L"Toggle 5");
 	ButtonList[13]->SetName(L"Toggle 6");
 	ButtonList[14]->SetName(L"Second Trigger");
+	ButtonList[15]->SetName(L"POV 2 (Up)");
+	ButtonList[16]->SetName(L"POV 2 (Right)");
+	ButtonList[17]->SetName(L"POV 2 (Down)");
+	ButtonList[18]->SetName(L"POV 2 (Left)");
+	ButtonList[19]->SetName(L"Throttle HAT (Up)");
+	ButtonList[20]->SetName(L"Throttle HAT (Right)");
+	ButtonList[21]->SetName(L"Throttle HAT (Down)");
+	ButtonList[22]->SetName(L"Throttle HAT (Left)");
 	ButtonList[23]->SetName(L"Mode 1");
 	ButtonList[24]->SetName(L"Mode 2");
 	ButtonList[25]->SetName(L"Mode 3");
@@ -37,7 +45,6 @@ SaitekX52::SaitekX52(HANDLE device) : TChapman500::JoystickAPI::Joystick(device)
 	AxisList[7]->SetName(L"Mouse X");
 	AxisList[8]->SetName(L"Mouse Y");
 
-	// Set all button names BEFORE Calling this function.
 	AddCustomHAT(15, 17, 16, 18, L"POV 2");
 	AddCustomHAT(19, 21, 20, 22, L"Throttle HAT");
 }
