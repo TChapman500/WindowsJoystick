@@ -328,7 +328,26 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 
 				for (unsigned i = 0; i < btnCount; i++)
 				{
-					swprintf(btnName, 32, L"Button %d", i);
+					switch (currDev->ButtonList[i]->Usage)
+					{
+					case 60001:
+						swprintf(btnName, 32, L"PoV Up");
+						break;
+					case 60002:
+						swprintf(btnName, 32, L"PoV Down");
+						break;
+					case 60003:
+						swprintf(btnName, 32, L"PoV Right");
+						break;
+					case 60004:
+						swprintf(btnName, 32, L"PoV Left");
+						break;
+					default:
+						swprintf(btnName, 32, L"Button %d", i);
+						break;
+					}
+
+
 					item.iItem = i;
 					ListView_InsertItem(BtnList, &item);
 					ZeroMemory(btnName, 64);
