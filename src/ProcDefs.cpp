@@ -1,9 +1,9 @@
 #include "resource.h"
 #include "ProcDefs.h"
-#include "../InputSystem/InputSystem.h"
+#include "../InputSystem/WinInputSystem.h"
 
 extern HWND MainHWnd;
-extern TChapman500::JoystickAPI::IInputSystem *InputSystem;
+extern TChapman500::Input::IInputSystem *InputSystem;
 
 extern void InitializeInputSystem();
 
@@ -29,14 +29,13 @@ INT_PTR CALLBACK OnDestroy(HWND hWnd, WPARAM wParam, LPARAM lParam)
 	return TRUE;
 }
 
-
-
+extern bool refresh;
 INT_PTR CALLBACK OnCommand(HWND hWnd, WPARAM wParam, LPARAM lParam)
 {
 	switch (wParam)
 	{
 	case IDC_REFRESH:
-		InitializeInputSystem();
+		refresh = true;
 		break;
 	}
 	return TRUE;

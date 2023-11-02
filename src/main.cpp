@@ -5,17 +5,17 @@
 
 #include <commctrl.h>
 #include <Windows.h>
-#include "../InputSystem/IInputSystem.h"
-#include "../InputSystem/InputSystem.h"
+#include "../InputSystem/WinInputSystem.h"
 #include "../InputSystem/Joystick.h"
 #include "../InputSystem/InputAxis.h"
 #include "../InputSystem/InputButton.h"
 #include "../InputSystem/InputHAT.h"
 
 #include <string>
+#include <vector>
 
-TChapman500::JoystickAPI::IInputSystem *InputSystem = nullptr;
-TChapman500::JoystickAPI::Joystick *currDev = nullptr;
+TChapman500::Input::IInputSystem *InputSystem = nullptr;
+TChapman500::Input::Joystick *currDev = nullptr;
 bool refreshCycle = true;
 
 static PROCFUNC WndProc[65536];
@@ -29,7 +29,9 @@ HWND DevCountText;
 
 INT_PTR CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-	return WndProc[message](hWnd, wParam, lParam);
+	if (!InputSystem) return FALSE;
+	BOOL result = ((TChapman500::Input::Windows::WinInputSystem *)InputSystem)->WindowProc(message, wParam, lParam);
+	if (!result) return WndProc[message](hWnd, wParam, lParam);
 }
 
 int CurrSelection = -1;
@@ -38,17 +40,40 @@ int CurrSelection = -1;
 unsigned prevSel = -1;
 unsigned currSel = -1;
 
+bool refresh = true;
+
 void InitializeInputSystem()
 {
+	//if (IsWindow(MainHWnd))
+	//{
+	//	MessageBoxW(MainHWnd, L"This is a valid handle.", L"Valid HWND", MB_OK);
+	//}
+
 	refreshCycle = true;
 	prevSel = -1;
 	currSel = -1;
 	currDev = nullptr;
 
 	// Initialize Input System
-	if (InputSystem) TChapman500::JoystickAPI::DestroyInputSystem(InputSystem);
-	InputSystem = TChapman500::JoystickAPI::CreateInputSystem();
+	if (InputSystem) delete InputSystem;
+	InputSystem = new TChapman500::Input::Windows::WinInputSystem(MainHWnd);
 
+}
+
+std::wstring HatStates[9] = {
+	L"Up",
+	L"Up and Right",
+	L"Right",
+	L"Down and Right",
+	L"Down",
+	L"Down and Left",
+	L"Left",
+	L"Up and Left",
+	L"Centered"
+};
+
+void PopulateJoystickList()
+{
 	// Clear all lists
 	ListView_DeleteAllItems(DevList);
 	ListView_DeleteAllItems(BtnList);
@@ -72,20 +97,21 @@ void InitializeInputSystem()
 	for (unsigned i = 0; i < devCount; i++)
 	{
 		// Current Joystick
-		TChapman500::JoystickAPI::Joystick *currDevice = InputSystem->GetJoystick(i);
+		TChapman500::Input::Joystick *currDevice = InputSystem->GetJoystick(i);
 
 		// Name Buffer
-		wchar_t nameStr[126];
-		item.pszText = nameStr;
+		wchar_t *nameStr;
 		item.iItem = i;
 
 		// Poduct Name
-		currDevice->GetProductName(nameStr);
+		nameStr = (wchar_t *)currDevice->GetProductName();
+		item.pszText = nameStr;
 		item.iSubItem = 0;
 		ListView_InsertItem(DevList, &item);
 
 		// Vendor Name
-		currDevice->GetVendorName(nameStr);
+		nameStr = (wchar_t *)currDevice->GetVendorName();
+		item.pszText = nameStr;
 		item.iSubItem = 1;
 		ListView_SetItemText(DevList, i, 1, nameStr);
 
@@ -93,37 +119,24 @@ void InitializeInputSystem()
 		if (usage == 4) { ListView_SetItemText(DevList, i, 2, (LPWSTR)L"Joystick"); }
 		else if (usage == 5) { ListView_SetItemText(DevList, i, 2, (LPWSTR)L"Gamepad"); }
 
-		char bChar[32];
-		currDevice->GetInterfaceName(bChar);
-		for (unsigned i = 0; i < 32; i++) nameStr[i] = bChar[i] & 255;
+		nameStr = (wchar_t *)currDevice->GetInterfaceName();
+		item.pszText = nameStr;
 		ListView_SetItemText(DevList, i, 3, item.pszText);
 
-
-		swprintf_s(nameStr, 16, L"%d", (unsigned)currDevice->AxisList.size());
+		wchar_t printStr[16];
+		item.pszText = printStr;
+		swprintf_s(printStr, 16, L"%d", (unsigned)currDevice->GetAxisCount());
 		ListView_SetItemText(DevList, i, 4, item.pszText);
 
-		swprintf_s(nameStr, 16, L"%d", (unsigned)currDevice->ButtonList.size());
+		swprintf_s(printStr, 16, L"%d", (unsigned)currDevice->GetButtonCount());
 		ListView_SetItemText(DevList, i, 5, item.pszText);
 
-		swprintf_s(nameStr, 16, L"%d", (unsigned)currDevice->HATList.size());
+		swprintf_s(printStr, 16, L"%d", (unsigned)currDevice->GetHATCount());
 		ListView_SetItemText(DevList, i, 6, item.pszText);
 	}
 }
 
-std::wstring HatStates[9] = {
-	L"Up",
-	L"Up and Right",
-	L"Right",
-	L"Down and Right",
-	L"Down",
-	L"Down and Left",
-	L"Left",
-	L"Up and Left",
-	L"Centered"
-};
-
-
-int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nShowCmd)
+int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nShowCmd)
 {
 	// Initialize proc list.
 	for (int i = 0; i < 65536; i++) WndProc[i] = &Unprocessed;	// Default message handler.
@@ -175,7 +188,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 		column.cx = 140;
 		ListView_InsertColumn(DevList, 3, &column);
 
-		column.pszText = (LPWSTR)L"#Axis";
+		column.pszText = (LPWSTR)L"#Axes";
 		column.cx = 60;
 		ListView_InsertColumn(DevList, 4, &column);
 
@@ -247,14 +260,24 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 	std::vector<bool> prevButtonStates;
 	std::vector<unsigned> prevHatStates;
 
+	unsigned prevCount = InputSystem->GetJoystickCount();
+	PopulateJoystickList();
+
 	while (true)
 	{
 		// Process Messages
-		while (PeekMessageW(&msg, nullptr, NULL, NULL, PM_REMOVE))
+		if (PeekMessageW(&msg, nullptr, NULL, NULL, PM_REMOVE))
 		{
-			if (msg.message == WM_QUIT) goto CLEAN_UP;
+			if (msg.message == WM_QUIT) break;
 			TranslateMessage(&msg);
 			DispatchMessageW(&msg);
+			continue;
+		}
+
+		if (InputSystem->GetJoystickCount() != prevCount)
+		{
+			prevCount = InputSystem->GetJoystickCount();
+			PopulateJoystickList();
 		}
 		
 		// Get selected joystick
@@ -276,7 +299,6 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 			}
 		}
 
-
 		// Only populate object lists if selection has changed and is valid.
 		if (currSel != prevSel && currSel < InputSystem->GetJoystickCount())
 		{
@@ -289,22 +311,22 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 			currDev = InputSystem->GetJoystick(currSel);
 
 			prevButtonStates.clear();
-			prevButtonStates.resize(currDev->ButtonList.size());
+			prevButtonStates.resize(currDev->GetButtonCount());
 			for (unsigned i = 0; i < prevButtonStates.size(); i++)
-				prevButtonStates[i] = currDev->ButtonList[i]->IsPressed;
+				prevButtonStates[i] = currDev->GetButtonState(i);
 
 			prevAxisStates.clear();
-			prevAxisStates.resize(currDev->AxisList.size());
+			prevAxisStates.resize(currDev->GetAxisCount());
 			for (unsigned i = 0; i < prevAxisStates.size(); i++)
 			{
-				prevAxisStates[i] = currDev->AxisList[i]->RawValue;
+				prevAxisStates[i] = currDev->GetAxisValue(i);
 			}
 
 			prevHatStates.clear();
-			prevHatStates.resize(currDev->HATList.size());
+			prevHatStates.resize(currDev->GetHATCount());
 			for (unsigned i = 0; i < prevHatStates.size(); i++)
 			{
-				prevHatStates[i] = (unsigned)currDev->HATList[i]->HATPosition;
+				prevHatStates[i] = (unsigned)currDev->GetHATPosition(i);
 			}
 
 			unsigned btnColumns[2] = { 0, 1 };
@@ -317,7 +339,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 
 			// Populate button list
 			{
-				unsigned btnCount = (unsigned)currDev->ButtonList.size();
+				unsigned btnCount = (unsigned)currDev->GetButtonCount();
 
 				// Name Buffer
 				wchar_t btnName[32];
@@ -328,7 +350,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 
 				for (unsigned i = 0; i < btnCount; i++)
 				{
-					switch (currDev->ButtonList[i]->Usage)
+					switch (currDev->GetButtonUsage(i))
 					{
 					case 60001:
 						swprintf(btnName, 32, L"PoV Up");
@@ -365,13 +387,16 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 
 			// Populate axis list
 			{
-				unsigned btnCount = (unsigned)currDev->AxisList.size();
+				unsigned btnCount = (unsigned)currDev->GetAxisCount();
 
 				item.iSubItem = 0;
 
+				TChapman500::Input::value_properties properties;
+				
 				for (unsigned i = 0; i < btnCount; i++)
 				{
-					unsigned short usage = currDev->AxisList[i]->Usage;
+					currDev->GetAxisProperties(properties, i);
+					unsigned short usage = properties.Usage;
 
 					switch (usage)
 					{
@@ -411,22 +436,22 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 					ListView_InsertItem(AxisList, &item);
 
 					wchar_t btnName[32];
-					swprintf(btnName, 32, L"%d", currDev->AxisList[i]->BitSize);
+					swprintf(btnName, 32, L"%d", properties.Bits);
 					ListView_SetItemText(AxisList, i, 1, btnName);
 
-					swprintf(btnName, 32, L"%d", currDev->AxisList[i]->MinValue);
+					swprintf(btnName, 32, L"%d", properties.MinValue);
 					ListView_SetItemText(AxisList, i, 2, btnName);
 
-					swprintf(btnName, 32, L"%d", currDev->AxisList[i]->MaxValue);
+					swprintf(btnName, 32, L"%d", properties.MaxValue);
 					ListView_SetItemText(AxisList, i, 3, btnName);
 
-					swprintf(btnName, 32, L"%d", currDev->AxisList[i]->RawValue);
+					swprintf(btnName, 32, L"%d", currDev->GetAxisValue(i));
 					ListView_SetItemText(AxisList, i, 4, btnName);
 
-					swprintf(btnName, 32, L"%.4f", currDev->AxisList[i]->CenterRelative);
+					swprintf(btnName, 32, L"%.4f", currDev->GetAxisCenterRelative(i));
 					ListView_SetItemText(AxisList, i, 5, btnName);
 
-					swprintf(btnName, 32, L"%.4f", currDev->AxisList[i]->EndRelative);
+					swprintf(btnName, 32, L"%.4f", currDev->GetAxisEndRelative(i));
 					ListView_SetItemText(AxisList, i, 6, btnName);
 				}
 			}
@@ -434,7 +459,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 
 			// Populate hat list
 			{
-				unsigned btnCount = (unsigned)currDev->HATList.size();
+				unsigned btnCount = (unsigned)currDev->GetHATCount();
 
 				// Name Buffer
 				wchar_t btnName[32];
@@ -450,7 +475,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 					ListView_InsertItem(HATList, &item);
 					ZeroMemory(btnName, 64);
 
-					unsigned pos = (unsigned)currDev->HATList[i]->HATPosition;
+					unsigned pos = (unsigned)currDev->GetHATPosition(i);
 					ListView_SetItemText(HATList, i, 1, (wchar_t *)HatStates[pos].c_str());
 				}
 			}
@@ -465,11 +490,11 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 		if (currDev)
 		{
 			// Print Button States
-			for (unsigned i = 0; i < currDev->ButtonList.size(); i++)
+			for (unsigned i = 0; i < (unsigned)currDev->GetButtonCount(); i++)
 			{
-				if (prevButtonStates[i] != currDev->ButtonList[i]->IsPressed)
+				if (prevButtonStates[i] != currDev->GetButtonState(i))
 				{
-					if (currDev->ButtonList[i]->IsPressed)
+					if (currDev->GetButtonState(i))
 					{
 						ListView_SetItemText(BtnList, i, 1, (wchar_t *)L"true");
 					}
@@ -477,40 +502,40 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 					{
 						ListView_SetItemText(BtnList, i, 1, (wchar_t *)L"false");
 					}
-					prevButtonStates[i] = currDev->ButtonList[i]->IsPressed;
+					prevButtonStates[i] = currDev->GetButtonState(i);
 				}
 			}
 
 			// Print Axis States
-			for (unsigned i = 0; i < currDev->AxisList.size(); i++)
+			for (unsigned i = 0; i < currDev->GetAxisCount(); i++)
 			{
-				if (prevAxisStates[i] != currDev->AxisList[i]->RawValue)
+				if (prevAxisStates[i] != currDev->GetAxisValue(i))
 				{
 					wchar_t btnName[32];
 
-					swprintf(btnName, 32, L"%d", currDev->AxisList[i]->RawValue);
+					swprintf(btnName, 32, L"%d", currDev->GetAxisValue(i));
 					ListView_SetItemText(AxisList, i, 4, btnName);
 
-					swprintf(btnName, 32, L"%.4f", currDev->AxisList[i]->CenterRelative);
+					swprintf(btnName, 32, L"%.4f", currDev->GetAxisCenterRelative(i));
 					ListView_SetItemText(AxisList, i, 5, btnName);
 
-					swprintf(btnName, 32, L"%.4f", currDev->AxisList[i]->EndRelative);
+					swprintf(btnName, 32, L"%.4f", currDev->GetAxisEndRelative(i));
 					ListView_SetItemText(AxisList, i, 6, btnName);
 
-					prevAxisStates[i] = currDev->AxisList[i]->RawValue;
+					prevAxisStates[i] = currDev->GetAxisValue(i);
 				}
 			}
 
 
 			// Print HAT States
-			for (unsigned i = 0; i < currDev->HATList.size(); i++)
+			for (unsigned i = 0; i < currDev->GetHATCount(); i++)
 			{
-				if (prevHatStates[i] != (unsigned)currDev->HATList[i]->HATPosition)
+				if (prevHatStates[i] != (unsigned)currDev->GetHATPosition(i))
 				{
-					unsigned pos = (unsigned)currDev->HATList[i]->HATPosition;
+					unsigned pos = (unsigned)currDev->GetHATPosition(i);
 					ListView_SetItemText(HATList, i, 1, (wchar_t*)HatStates[pos].c_str());
 
-					prevHatStates[i] = (unsigned)currDev->HATList[i]->HATPosition;
+					prevHatStates[i] = (unsigned)currDev->GetHATPosition(i);
 				}
 			}
 		}
@@ -520,8 +545,8 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 
 
 	}
-CLEAN_UP:
-	TChapman500::JoystickAPI::DestroyInputSystem(InputSystem);
+
+	delete InputSystem;
 	return (int)msg.wParam;
 }
 
